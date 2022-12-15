@@ -1,5 +1,5 @@
 <template>
-  <div class="el-button">
+  <div class="el-button" :style="{ marginLeft: marginLeft + 'px' }">
     <div class="el-button__value">{{ value }}</div>
   </div>
 </template>
@@ -7,8 +7,14 @@
 <script>
 export default {
   props: {
+    marginLeft: {
+      type: Number,
+    },
     value: {
       type: Number,
+    },
+    queue: {
+      type: Array,
     },
   },
   data() {

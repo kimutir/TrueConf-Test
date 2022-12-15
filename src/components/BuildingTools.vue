@@ -6,7 +6,11 @@
       :style="{ height: computedHeight + 'px' }"
       :key="floor"
     >
-      <elevator-button :value="floor" />
+      <elevator-button
+        :value="floor"
+        :marginLeft="marginLeft"
+        :queue="queue"
+      />
     </div>
   </div>
 </template>
@@ -19,7 +23,10 @@ export default {
   components: {
     ElevatorButton,
   },
-  props: {},
+  props: {
+    queue: Array,
+    marginLeft: Number,
+  },
   data() {
     return {
       floors: config.floors,
