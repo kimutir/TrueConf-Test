@@ -1,6 +1,10 @@
 <template>
   <div class="building">
-    <building-tools :queue="queue" :marginLeft="marginButtonsLeft" />
+    <building-tools
+      :queue="queue"
+      :marginLeft="marginButtonsLeft"
+      :onAddFloor="onAddFloor"
+    />
     <building-shafts
       :queue="queue"
       @shaftsHtml="computeButtonsMargin"
@@ -31,6 +35,16 @@ export default {
     // вычисления маржина для кнопок
     computeButtonsMargin(shaftsHtml) {
       this.marginButtonsLeft = shaftsHtml.offsetWidth;
+    },
+    // добавляем этаж в очередь
+    onAddFloor(nextFloor) {
+      if (
+        (nextFloor === this.currentFloor && this.waiting) ||
+        this.queue.includes(nextFloor) ||
+        (nextFloor === this.currentFloor && !this.active)
+      )
+        return;
+      this.queue.push(nextFloor);
     },
   },
   mounted() {},

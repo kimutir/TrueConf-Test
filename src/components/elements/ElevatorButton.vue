@@ -1,5 +1,10 @@
 <template>
-  <div class="el-button" :style="{ marginLeft: marginLeft + 'px' }">
+  <div
+    class="el-button"
+    :class="{ active: queue.includes(value) }"
+    :style="{ marginLeft: marginLeft + 'px' }"
+    @click.stop="onAddFloor(value)"
+  >
     <div class="el-button__value">{{ value }}</div>
   </div>
 </template>
@@ -15,6 +20,9 @@ export default {
     },
     queue: {
       type: Array,
+    },
+    onAddFloor: {
+      type: Function,
     },
   },
   data() {
@@ -39,5 +47,8 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.active {
+  border: 2px solid red;
 }
 </style>

@@ -10,6 +10,7 @@
         :value="floor"
         :marginLeft="marginLeft"
         :queue="queue"
+        :onAddFloor="onAddFloor"
       />
     </div>
   </div>
@@ -26,6 +27,12 @@ export default {
   props: {
     queue: Array,
     marginLeft: Number,
+    onAddFloor: {
+      type: Function,
+      default: () => {
+        console.log("ni");
+      },
+    },
   },
   data() {
     return {
