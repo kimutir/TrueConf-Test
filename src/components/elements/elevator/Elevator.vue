@@ -3,14 +3,20 @@
     class="elevator"
     :style="{ height: elevHeight + 'px' }"
     ref="elevator"
-  ></div>
+  >
+    <elevator-info :currentFloor="currentFloor" />
+  </div>
 </template>
 
 <script>
 import config from "@/config";
+import ElevatorInfo from "@/components/elements/elevator/ElevatorInfo.vue";
 
 export default {
   props: {},
+  components: {
+    ElevatorInfo,
+  },
   data() {
     return {
       currentFloor: 1,
