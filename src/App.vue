@@ -44,10 +44,18 @@ export default {
         (nextFloor === this.currentFloor && !this.active)
       )
         return;
+
+      // добавлем этаж в стек и запонимаем
       this.queue.push(nextFloor);
+      localStorage.queue = JSON.stringify(this.queue);
     },
   },
-  mounted() {},
+  mounted() {
+    // инициализация стека
+    this.queue = localStorage.queue
+      ? JSON.parse(localStorage.queue)
+      : [];
+  },
 };
 </script>
 

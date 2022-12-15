@@ -41,8 +41,9 @@ export default {
         const start = performance.now();
 
         // с какой позиции начинается анимация
-        const lastPosition =
-          (config.floors - this.currentFloor) * this.elevHeight;
+        const lastPosition = localStorage.currentPosotion
+          ? JSON.parse(localStorage.currentPosotion)
+          : (config.floors - this.currentFloor) * this.elevHeight;
 
         const animate = (time) => {
           // длительность анимации
@@ -55,6 +56,9 @@ export default {
             lastPosition - direction * duraction * this.speed
           }px`;
 
+          // запоминаем позицию лифта
+          localStorage.currentPosotion = currentPosotion;
+
           // вызываем анимацию пока не доедет до нужного этажа
           if (
             currentPosotion * direction >
@@ -65,6 +69,9 @@ export default {
             this.$refs.elevator.style.top = `${
               (config.floors - floor) * this.elevHeight
             }px`;
+            // запоминаем уточненную позицию, когда лифт доехал
+            localStorage.currentPosotion =
+              (config.floors - floor) * this.elevHeight;
             cancelAnimationFrame(animate);
             res();
           }
@@ -83,8 +90,12 @@ export default {
       this.movementAnimation(queue[0]).then(() => {
         // лифт на новом этаже
         this.currentFloor = queue[0];
-        // удаляем его из стека
+        localStorage.currentFloor = this.currentFloor;
+
+        // удаляем его из стека и запоминаем
         queue.shift();
+        localStorage.queue = JSON.stringify(this.queue);
+
         // остановка 3 секунды и продолжение
         this.waiting = true;
         setTimeout(() => {
@@ -99,7 +110,6 @@ export default {
     // наблюдаем за изменением стека
     queue: {
       handler(value) {
-        console.log(value);
         if (!this.active && this.queue.length) {
           this.active = true;
           this.move(value);
@@ -109,9 +119,19 @@ export default {
     },
   },
   mounted() {
-    // опускаем лифт на первый этаж
-    this.$refs.elevator.style.top =
-      (config.floors - 1) * this.elevHeight + "px";
+    // текущий этаж
+    this.currentFloor = localStorage.currentFloor
+      ? JSON.parse(localStorage.currentFloor)
+      : 1;
+
+    // тукущее положение лифта
+    if (localStorage.currentPosotion) {
+      this.$refs.elevator.style.top =
+        JSON.parse(localStorage.currentPosotion) + "px";
+    } else {
+      this.$refs.elevator.style.top =
+        (config.floors - 1) * this.elevHeight + "px";
+    }
   },
 };
 </script>
