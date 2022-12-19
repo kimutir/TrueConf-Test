@@ -1,7 +1,7 @@
 export default {
   // количество лифтов
-  elevators: 1,
+  elevators: 3,
 
   // количество этажей
-  floors: 5,
+  floors: 7,
 };

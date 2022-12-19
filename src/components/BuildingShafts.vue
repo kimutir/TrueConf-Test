@@ -1,7 +1,12 @@
 <template>
   <div class="building-shafts shafts" ref="shafts">
-    <div class="shafts__item" v-for="elNum in elevators">
-      <elevator :queue="queue" :number="elNum" />
+    <div class="shafts__item" v-for="elNum in elevators" :key="elNum">
+      <elevator
+        :queue="queues[elNum - 1].queue"
+        :number="elNum - 1"
+        @elev-floors="elevFloors"
+        @finish-time="computedFinishTime"
+      />
     </div>
   </div>
 </template>
@@ -12,7 +17,7 @@ import Elevator from "@/components/elements/elevator/Elevator.vue";
 
 export default {
   props: {
-    queue: Array,
+    queues: Array,
   },
   components: {
     Elevator,
@@ -22,9 +27,26 @@ export default {
       elevators: config.elevators,
     };
   },
+  methods: {
+    elevFloors(number, actualFloor, currentFloor) {
+      this.$emit("elevFloors", number, actualFloor, currentFloor);
+    },
+    computedFinishTime(number, value) {
+      this.$emit("finishTime", number, value);
+    },
+  },
   mounted() {
     // передаем элемент, чтобы узнать отспут для кнопок
     this.$emit("shaftsHtml", this.$refs.shafts);
+  },
+  watch: {
+    queues: {
+      handler(value) {
+        // console.log("watch from shafts", value);
+        // console.log("queues from shafts", value);
+      },
+      deep: true,
+    },
   },
 };
 </script>
