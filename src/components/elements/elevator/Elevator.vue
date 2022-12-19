@@ -8,7 +8,6 @@
       :waiting="waiting"
       :active="active"
       :currentFloor="currentFloor"
-      :nextFloor="nextFloor"
       :queue="queue"
     />
   </div>
@@ -17,10 +16,13 @@
 <script>
 import config from "@/config";
 import ElevatorInfo from "@/components/elements/elevator/ElevatorInfo.vue";
+import remember from "@/utils/remember";
 
 export default {
   props: {
     queue: Array,
+    initialPosition: Number,
+    initialFloor: Number,
     number: Number,
   },
   components: {
@@ -29,7 +31,6 @@ export default {
   data() {
     return {
       currentFloor: 1,
-      nextFloor: null,
       elevHeight: window.innerHeight / config.floors,
       active: false,
       waiting: false,
@@ -39,42 +40,59 @@ export default {
     };
   },
   methods: {
-    movementAnimation(floor, startFloor) {
+    movementAnimation(endFloor, startFloor) {
       return new Promise((res) => {
         const start = performance.now();
 
         // с какой позиции начинается анимация
-        const lastPosition = localStorage.currentPosotion
-          ? JSON.parse(localStorage.currentPosotion)
+        const storageQueuesJSON = localStorage.queues;
+        const storageQueues = JSON.parse(storageQueuesJSON);
+        const lastPosition = storageQueues[this.number]
+          .currentPosition
+          ? storageQueues[this.number].currentPosition
           : (config.floors - startFloor) * this.elevHeight;
 
         const animate = (time) => {
           // длительность анимации
           const duraction = time - start;
-          const currentPosotion = this.$refs.elevator.offsetTop;
-          // направление движения (реверсивно)
-          const direction = floor - startFloor < 0 ? -1 : 1;
+          const currentPosition = this.$refs.elevator.offsetTop;
+          // направление движения
+          const direction = endFloor - startFloor < 0 ? -1 : 1;
 
           this.$refs.elevator.style.top = `${
             lastPosition - direction * duraction * this.speed
           }px`;
 
           // запоминаем позицию лифта
-          // localStorage.currentPosotion = currentPosotion;
+          const storeQueuesJSON = localStorage.getItem("queues");
+          const storeQueue = JSON.parse(storeQueuesJSON);
+          storeQueue[this.number].currentPosition = currentPosition;
+          localStorage.queues = JSON.stringify(storeQueue);
+          remember({
+            key: "queues",
+            param: "currentPosition",
+            value: currentPosition,
+            num: this.number,
+          });
 
           // вызываем анимацию пока не доедет до нужного этажа
           if (
-            currentPosotion * direction >
-            (config.floors - floor) * this.elevHeight * direction
+            currentPosition * direction >
+            (config.floors - endFloor) * this.elevHeight * direction
           ) {
             requestAnimationFrame(animate);
           } else {
             this.$refs.elevator.style.top = `${
-              (config.floors - floor) * this.elevHeight
+              (config.floors - endFloor) * this.elevHeight
             }px`;
             // запоминаем уточненную позицию, когда лифт доехал
-            // localStorage.currentPosotion =
-            //   (config.floors - floor) * this.elevHeight;
+
+            remember({
+              key: "queues",
+              param: "currentPosition",
+              value: (config.floors - endFloor) * this.elevHeight,
+              num: this.number,
+            });
             cancelAnimationFrame(animate);
             res();
           }
@@ -90,56 +108,50 @@ export default {
         this.active = false;
         return;
       }
-
-      this.nextFloor = queue[0];
-
+      // начальный и конечный этажи
       const startFloor = this.currentFloor;
       const endFloor = queue[0];
 
       this.movementAnimation(endFloor, startFloor).then(() => {
-        // лифт на новом этаже
+        // лифт на новом этаже, удаляем его из очереди
         this.currentFloor = queue[0];
         queue.shift();
-        // localStorage.currentFloor = this.currentFloor;
 
-        // удаляем его из стека и запоминаем
-
-        // localStorage.queue = JSON.stringify(this.queue);
+        // запоминаем этаж и стек лифта
+        remember({
+          key: "queues",
+          param: "currentFloor",
+          value: this.currentFloor,
+          num: this.number,
+        });
 
         // остановка 3 секунды и продолжение
         this.waiting = true;
-        // if (queue.length === 0) {
-        //   this.finishTime = 3;
-        // }
         setTimeout(() => {
           this.waiting = false;
-          console.log("waiting:", this.waiting);
           // вызываем рекурсивно, пока в стеке есть этажи
           return this.move(queue);
         }, 3000);
       });
     },
-
+    // вычисляем оставшееся время работы лифта
     computeFinishTime() {
-      //
+      // лифт в режиме ожидания
       if (this.queue.length === 0 && this.waiting) {
         this.finishTime = 3;
         const intervalId = setInterval(() => {
           this.finishTime = this.finishTime - 1;
         }, 1000);
         setTimeout(() => {
-          console.log("очистился");
           clearInterval(intervalId);
         }, 3000);
         return;
       }
-
-      // если стек пустой
+      // лифт готов к работе
       if (this.queue.length === 0 && !this.waiting) {
         this.finishTime = 0;
         return;
       }
-
       // если в стеке больше одного вызова
       if (this.queue.length > 0) {
         const result = this.queue.reduce((acc, item, index) => {
@@ -157,6 +169,13 @@ export default {
     queue: {
       handler(value) {
         this.computeFinishTime();
+        remember({
+          key: "queues",
+          param: "queue",
+          value,
+          num: this.number,
+        });
+        // передаем текущий и обрабатываемый этажи
         this.$emit(
           "elevFloors",
           this.number,
@@ -165,6 +184,7 @@ export default {
         );
         // включаем анимацию движения
         if (!this.active && this.queue.length) {
+          console.log("activate");
           this.active = true;
           this.move(value);
         }
@@ -172,25 +192,17 @@ export default {
       deep: true,
     },
     finishTime(value) {
-      console.log("finish in:", value);
+      // передаем оставшееся время работы лифта
       this.$emit("finishTime", this.number, value);
     },
+    initialPosition(value) {
+      this.$refs.elevator.style.top = value + "px";
+    },
+    initialFloor(value) {
+      this.currentFloor = value;
+    },
   },
-  mounted() {
-    // инициализируем этаж
-    this.currentFloor = localStorage.currentFloor
-      ? JSON.parse(localStorage.currentFloor)
-      : 1;
-
-    // инициализируем положение лифта
-    if (localStorage.currentPosotion) {
-      this.$refs.elevator.style.top =
-        JSON.parse(localStorage.currentPosotion) + "px";
-    } else {
-      this.$refs.elevator.style.top =
-        (config.floors - 1) * this.elevHeight + "px";
-    }
-  },
+  mounted() {},
 };
 </script>
 

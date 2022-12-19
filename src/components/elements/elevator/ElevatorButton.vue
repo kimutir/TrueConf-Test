@@ -3,7 +3,7 @@
     class="el-button"
     :class="{ active: queue.includes(value) }"
     :style="{ marginLeft: marginLeft + 'px' }"
-    @click.stop="onAddFloor(value)"
+    @click.stop="$emit('addFloor', value)"
   >
     <div class="el-button__value">{{ value }}</div>
   </div>
@@ -12,23 +12,23 @@
 <script>
 export default {
   props: {
-    marginLeft: {
-      type: Number,
-    },
-    value: {
-      type: Number,
-    },
-    queue: {
-      type: Array,
-    },
-    onAddFloor: {
-      type: Function,
-    },
+    marginLeft: Number,
+    value: Number,
+    queue: Array,
+    // onAddFloor: Function,
   },
   data() {
     return {};
   },
   methods: {},
+  watch: {
+    queue: {
+      handler(value) {
+        // console.log(value);
+      },
+      deep: true,
+    },
+  },
 };
 </script>
 

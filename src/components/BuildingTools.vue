@@ -10,7 +10,7 @@
         :value="floor"
         :marginLeft="marginLeft"
         :queue="queue"
-        :onAddFloor="onAddFloor"
+        @add-floor="onAddFloor"
       />
     </div>
   </div>
@@ -18,7 +18,7 @@
 
 <script>
 import config from "@/config";
-import ElevatorButton from "@/components/elements/ElevatorButton.vue";
+import ElevatorButton from "@/components/elements/elevator/ElevatorButton.vue";
 
 export default {
   components: {
@@ -27,18 +27,17 @@ export default {
   props: {
     queue: Array,
     marginLeft: Number,
-    onAddFloor: {
-      type: Function,
-      default: () => {
-        console.log("ni");
-      },
-    },
   },
   data() {
     return {
       floors: config.floors,
       computedHeight: window.innerHeight / config.floors,
     };
+  },
+  methods: {
+    onAddFloor(value) {
+      this.$emit("addFloor", value);
+    },
   },
 };
 </script>

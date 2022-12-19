@@ -3,6 +3,8 @@
     <div class="shafts__item" v-for="elNum in elevators" :key="elNum">
       <elevator
         :queue="queues[elNum - 1].queue"
+        :initial-floor="queues[elNum - 1].currentFloor"
+        :initial-position="queues[elNum - 1].currentPosition"
         :number="elNum - 1"
         @elev-floors="elevFloors"
         @finish-time="computedFinishTime"
@@ -28,25 +30,16 @@ export default {
     };
   },
   methods: {
-    elevFloors(number, actualFloor, currentFloor) {
-      this.$emit("elevFloors", number, actualFloor, currentFloor);
+    elevFloors(number, inProgressFloor, currentFloor) {
+      this.$emit("elevFloors", number, inProgressFloor, currentFloor);
     },
-    computedFinishTime(number, value) {
-      this.$emit("finishTime", number, value);
+    computedFinishTime(number, time) {
+      this.$emit("finishTime", number, time);
     },
   },
   mounted() {
     // передаем элемент, чтобы узнать отспут для кнопок
     this.$emit("shaftsHtml", this.$refs.shafts);
-  },
-  watch: {
-    queues: {
-      handler(value) {
-        // console.log("watch from shafts", value);
-        // console.log("queues from shafts", value);
-      },
-      deep: true,
-    },
   },
 };
 </script>

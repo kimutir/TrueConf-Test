@@ -3,7 +3,7 @@
     <building-tools
       :queue="totalQueue"
       :marginLeft="marginButtonsLeft"
-      :onAddFloor="onAddFloor"
+      @add-floor="onAddFloor"
     />
 
     <building-shafts
@@ -17,6 +17,7 @@
 
 <script>
 import config from "@/config";
+import fromLocalStorage from "@/utils/fromLocalStorage.js";
 import BuildingTools from "@/components/BuildingTools.vue";
 import BuildingShafts from "@/components/BuildingShafts.vue";
 
@@ -28,43 +29,49 @@ export default {
   },
   data() {
     return {
-      floors: config.floors,
-      elevators: config.elevators,
-      queue: [],
       queues: this.createQueues(config.elevators),
       totalQueue: [],
       marginButtonsLeft: 0,
+      computedHeight: window.innerHeight / config.floors,
     };
   },
   methods: {
-    computedFinishTime(number, value) {
-      this.queues[number].finishTime = value;
+    computedFinishTime(number, time) {
+      // устанавливаем оставшееся время работы лифта
+      this.queues[number].finishTime = time;
     },
-    elevFloors(number, actualFloor, testFloor) {
-      this.queues[number].currentFloor = actualFloor;
+    elevFloors(number, inProgressFloor, currentFloor) {
+      // следующий этаж или
+      // его текущий этаж, если лифт в покое
+      this.queues[number].floor = inProgressFloor;
+
+      // убираем из очереди этаж, на который пришел лифт
       this.totalQueue = this.totalQueue.filter(
-        (i) => i !== testFloor
+        (i) => i !== currentFloor
       );
+
+      // запоминаем стек этажей
+      localStorage.totalQueue = JSON.stringify(this.totalQueue);
     },
-    // вычисления маржина для кнопок
+    // вычисление маржина для кнопок
     computeButtonsMargin(shaftsHtml) {
       this.marginButtonsLeft = shaftsHtml.offsetWidth;
     },
     // добавляем этаж в очередь
     onAddFloor(nextFloor) {
-      const currentFloors = this.queues.map((i) => i.currentFloor);
-      console.log("currentFloors:", currentFloors);
+      const floors = this.queues.map((i) => i.floor);
+      // проверка на дублирование этажа в стеке
       if (
-        currentFloors.includes(nextFloor) ||
+        floors.includes(nextFloor) ||
         this.totalQueue.includes(nextFloor)
       ) {
-        console.log("уже есть, завершаю");
         return;
       } else {
-        console.log("надо добавить");
         this.totalQueue.push(nextFloor);
+        localStorage.totalQueue = JSON.stringify(this.totalQueue);
       }
 
+      // выбираем какой лифт вызвать
       const sortedQueues = [...this.queues];
       sortedQueues.sort((a, b) => a.finishTime - b.finishTime);
       let closest = sortedQueues[0];
@@ -72,8 +79,8 @@ export default {
       for (const a of sortedQueues) {
         if (a.finishTime === closest.finishTime) {
           if (
-            Math.abs(a.currentFloor - nextFloor) <
-            Math.abs(closest.currentFloor - nextFloor)
+            Math.abs(a.floor - nextFloor) <
+            Math.abs(closest.floor - nextFloor)
           ) {
             closest = a;
           }
@@ -83,9 +90,6 @@ export default {
       }
 
       this.queues[closest.number].queue.push(nextFloor);
-
-      // добавлем этаж в стек и запонимаем
-      // localStorage.queue = JSON.stringify(this.queue);
     },
     // создание стека
     createQueues(amount) {
@@ -95,19 +99,37 @@ export default {
           number: i,
           queue: [],
           finishTime: 0,
+          floor: 1,
           currentFloor: 1,
+          currentPosition: (config.floors - 1) * this.computedHeight,
         });
       }
       return result;
     },
   },
   mounted() {
-    this.queues.forEach((i) => this.totalQueue.push(...i.queue));
-
-    // инициализация стека
-    this.queue = localStorage.queue
-      ? JSON.parse(localStorage.queue)
-      : [];
+    // сверяем конфигурацию приложения
+    const storageSettings = fromLocalStorage("settings");
+    // если количество лифтов и этажей раны предыдущим значениям,
+    // то берем данные из localStorage
+    if (
+      storageSettings &&
+      storageSettings.elevators === config.elevators &&
+      storageSettings.floors === config.floors
+    ) {
+      this.queues = fromLocalStorage("queues");
+      this.totalQueue = fromLocalStorage("totalQueue");
+    } else {
+      const settings = {
+        elevators: config.elevators,
+        floors: config.floors,
+      };
+      const queues = this.createQueues(config.elevators);
+      localStorage.settings = JSON.stringify(settings);
+      localStorage.queues = JSON.stringify(queues);
+      this.queues = queues;
+      localStorage.totalQueue = JSON.stringify([]);
+    }
   },
   watch: {},
 };

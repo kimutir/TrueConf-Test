@@ -2,7 +2,7 @@
   <div class="elevator__info info">
     <div class="info__direction" :class="findDirection" />
     <div class="info__floor">
-      {{ waiting || !nextFloor ? currentFloor : nextFloor }}
+      {{ waiting || !this.queue[0] ? currentFloor : this.queue[0] }}
     </div>
   </div>
 </template>
@@ -11,7 +11,6 @@
 export default {
   props: {
     currentFloor: Number,
-    nextFloor: Number,
     queue: Array,
     active: Boolean,
     waiting: Boolean,
@@ -21,9 +20,9 @@ export default {
     findDirection() {
       if (this.waiting) return "direction__waiting";
       if (!this.active) return "direction__none";
-      if (this.active && this.nextFloor > this.currentFloor)
+      if (this.active && this.queue[0] > this.currentFloor)
         return "direction__up";
-      if (this.active && this.nextFloor < this.currentFloor)
+      if (this.active && this.queue[0] < this.currentFloor)
         return "direction__down";
     },
   },

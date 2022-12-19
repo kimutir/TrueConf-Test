@@ -11,3 +11,9 @@ npm install
 ```
 npm run start
 ```
+
+### Configure floors and elevators amount
+
+```
+src/config.js
+```
