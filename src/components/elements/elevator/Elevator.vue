@@ -17,6 +17,7 @@
 import config from "@/config";
 import ElevatorInfo from "@/components/elements/elevator/ElevatorInfo.vue";
 import remember from "@/utils/remember";
+import fromLocalStorage from "@/utils/fromLocalStorage";
 
 export default {
   props: {
@@ -45,8 +46,7 @@ export default {
         const start = performance.now();
 
         // с какой позиции начинается анимация
-        const storageQueuesJSON = localStorage.queues;
-        const storageQueues = JSON.parse(storageQueuesJSON);
+        const storageQueues = fromLocalStorage("queues");
         const lastPosition = storageQueues[this.number]
           .currentPosition
           ? storageQueues[this.number].currentPosition
@@ -64,10 +64,6 @@ export default {
           }px`;
 
           // запоминаем позицию лифта
-          const storeQueuesJSON = localStorage.getItem("queues");
-          const storeQueue = JSON.parse(storeQueuesJSON);
-          storeQueue[this.number].currentPosition = currentPosition;
-          localStorage.queues = JSON.stringify(storeQueue);
           remember({
             key: "queues",
             param: "currentPosition",
@@ -183,7 +179,6 @@ export default {
         );
         // включаем анимацию движения
         if (!this.active && this.queue.length) {
-          console.log("activate");
           this.active = true;
           this.move(value);
         }
