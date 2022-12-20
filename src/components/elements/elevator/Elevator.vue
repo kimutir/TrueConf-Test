@@ -7,7 +7,8 @@
     <elevator-info
       :waiting="waiting"
       :active="active"
-      :currentFloor="currentFloor"
+      :current-floor="currentFloor"
+      :prev-floor="prevFloor"
       :queue="queue"
     />
   </div>
@@ -33,6 +34,7 @@ export default {
   data() {
     return {
       currentFloor: 1,
+      prevFloor: null,
       active: false,
       waiting: false,
       finishTime: 0,
@@ -106,10 +108,12 @@ export default {
       // начальный и конечный этажи
       const startFloor = this.currentFloor;
       const endFloor = queue[0];
-      this.currentFloor = queue[0];
+      this.prevFloor = this.currentFloor;
+      this.currentFloor = null;
+
       this.movementAnimation(endFloor, startFloor).then(() => {
         // лифт на новом этаже, удаляем его из очереди
-
+        this.currentFloor = queue[0];
         queue.shift();
 
         // запоминаем текущий этаж

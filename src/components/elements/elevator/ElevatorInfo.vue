@@ -11,6 +11,7 @@
 export default {
   props: {
     currentFloor: Number,
+    prevFloor: Number,
     queue: Array,
     active: Boolean,
     waiting: Boolean,
@@ -20,9 +21,9 @@ export default {
     findDirection() {
       if (this.waiting) return "direction__waiting";
       if (!this.active) return "direction__none";
-      if (this.active && this.queue[0] > this.currentFloor)
+      if (this.active && this.queue[0] > this.prevFloor)
         return "direction__up";
-      if (this.active && this.queue[0] < this.currentFloor)
+      if (this.active && this.queue[0] < this.prevFloor)
         return "direction__down";
     },
   },
