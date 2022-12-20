@@ -13,6 +13,7 @@
       @shaftsHtml="computeButtonsMargin"
       @finish-time="computedFinishTime"
       @elev-floors="elevFloors"
+      @cur-floor="changedCurFloor"
     />
   </div>
 </template>
@@ -38,6 +39,9 @@ export default {
     };
   },
   methods: {
+    changedCurFloor(number, value) {
+      this.queues[number].currentFloor = value;
+    },
     computedFinishTime(number, time) {
       // устанавливаем оставшееся время работы лифта
       this.queues[number].finishTime = time;
@@ -47,11 +51,8 @@ export default {
       // его текущий этаж, если лифт в покое
       this.queues[number].floor = inProgressFloor;
 
-      // console.log(this.totalQueue);
-
       // убираем из очереди этаж, на который пришел лифт
       this.totalQueue = this.totalQueue.filter((i) => {
-        // console.log("deleting", currentFloor);
         return i !== currentFloor;
       });
 
@@ -64,15 +65,16 @@ export default {
     },
     // добавляем этаж в очередь
     onAddFloor(nextFloor) {
-      const floors = this.queues.map((i) => i.floor);
+      const floorsInProgress = this.queues.map((i) => i.floor);
+      const floorsCurrent = this.queues.map((i) => i.currentFloor);
       // проверка на дублирование этажа в стеке
       if (
-        floors.includes(nextFloor) ||
-        this.totalQueue.includes(nextFloor)
+        this.totalQueue.includes(nextFloor) ||
+        floorsInProgress.includes(nextFloor) ||
+        floorsCurrent.includes(nextFloor)
       ) {
         return;
       } else {
-        // console.log("added", nextFloor);
         this.totalQueue.push(nextFloor);
         localStorage.totalQueue = JSON.stringify(this.totalQueue);
       }
@@ -107,7 +109,6 @@ export default {
           break;
         }
       }
-
       this.queues[closest.number].queue.push(nextFloor);
     },
     // создание стека

@@ -9,6 +9,7 @@
         :elev-height="computedHeight"
         @elev-floors="elevFloors"
         @finish-time="computedFinishTime"
+        @cur-floor="currentFloor"
       />
     </div>
   </div>
@@ -34,6 +35,9 @@ export default {
     },
     computedFinishTime(number, time) {
       this.$emit("finishTime", number, time);
+    },
+    currentFloor(number, value) {
+      this.$emit("curFloor", number, value);
     },
   },
   mounted() {

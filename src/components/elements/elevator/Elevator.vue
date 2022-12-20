@@ -49,8 +49,7 @@ export default {
 
         // с какой позиции начинается анимация
         const storageQueues = fromLocalStorage("queues");
-        const lastPosition = storageQueues[this.number]
-          .currentPosition
+        const lastPosition = storageQueues
           ? storageQueues[this.number].currentPosition
           : (config.floors - startFloor) * this.elevHeight;
 
@@ -115,7 +114,6 @@ export default {
         // лифт на новом этаже, удаляем его из очереди
         this.currentFloor = queue[0];
         queue.shift();
-
         // запоминаем текущий этаж
         remember({
           key: "queues",
@@ -128,6 +126,7 @@ export default {
         this.waiting = true;
         setTimeout(() => {
           this.waiting = false;
+
           // вызываем рекурсивно, пока в стеке есть этажи
           return this.move(queue);
         }, 3000);
@@ -166,7 +165,7 @@ export default {
   },
   watch: {
     queue: {
-      handler(value) {
+      handler(value, old) {
         this.computeFinishTime();
         remember({
           key: "queues",
@@ -198,6 +197,9 @@ export default {
     },
     initialFloor(value) {
       this.currentFloor = value;
+    },
+    currentFloor(value) {
+      this.$emit("curFloor", this.number, value);
     },
   },
   mounted() {},

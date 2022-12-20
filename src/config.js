@@ -1,6 +1,6 @@
 export default {
   // количество лифтов
-  elevators: 3,
+  elevators: 2,
 
   // количество этажей
   floors: 8,
