@@ -1,11 +1,12 @@
 <template>
   <div class="building-shafts shafts" ref="shafts">
-    <div class="shafts__item" v-for="elNum in elevators" :key="elNum">
+    <div class="shafts__item" v-for="el in queues" :key="el.number">
       <elevator
-        :queue="queues[elNum - 1].queue"
-        :initial-floor="queues[elNum - 1].currentFloor"
-        :initial-position="queues[elNum - 1].currentPosition"
-        :number="elNum - 1"
+        :queue="el.queue"
+        :initial-floor="el.currentFloor"
+        :initial-position="el.currentPosition"
+        :number="el.number"
+        :elev-height="computedHeight"
         @elev-floors="elevFloors"
         @finish-time="computedFinishTime"
       />
@@ -14,20 +15,18 @@
 </template>
 
 <script>
-import config from "@/config";
 import Elevator from "@/components/elements/elevator/Elevator.vue";
 
 export default {
   props: {
     queues: Array,
+    computedHeight: Number,
   },
   components: {
     Elevator,
   },
   data() {
-    return {
-      elevators: config.elevators,
-    };
+    return {};
   },
   methods: {
     elevFloors(number, inProgressFloor, currentFloor) {

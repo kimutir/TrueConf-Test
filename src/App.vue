@@ -8,6 +8,7 @@
 
     <building-shafts
       :queues="queues"
+      :computed-height="computedHeight"
       @shaftsHtml="computeButtonsMargin"
       @finish-time="computedFinishTime"
       @elev-floors="elevFloors"
@@ -110,7 +111,7 @@ export default {
   mounted() {
     // сверяем конфигурацию приложения
     const storageSettings = fromLocalStorage("settings");
-    // если количество лифтов и этажей раны предыдущим значениям,
+    // если количество лифтов и этажей равны предыдущим значениям,
     // то берем данные из localStorage
     if (
       storageSettings &&

@@ -24,6 +24,7 @@ export default {
     initialPosition: Number,
     initialFloor: Number,
     number: Number,
+    elevHeight: Number,
   },
   components: {
     ElevatorInfo,
@@ -31,7 +32,6 @@ export default {
   data() {
     return {
       currentFloor: 1,
-      elevHeight: window.innerHeight / config.floors,
       active: false,
       waiting: false,
       finishTime: 0,
@@ -86,7 +86,6 @@ export default {
               (config.floors - endFloor) * this.elevHeight
             }px`;
             // запоминаем уточненную позицию, когда лифт доехал
-
             remember({
               key: "queues",
               param: "currentPosition",
@@ -117,7 +116,7 @@ export default {
         this.currentFloor = queue[0];
         queue.shift();
 
-        // запоминаем этаж и стек лифта
+        // запоминаем текущий этаж
         remember({
           key: "queues",
           param: "currentFloor",

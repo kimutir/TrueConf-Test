@@ -1,4 +1,4 @@
-export default function remember({ key, param, value, num }) {
+export default function ({ key, param, value, num }) {
   const storeQueuesJSON = localStorage.getItem(key);
   const storeQueue = JSON.parse(storeQueuesJSON);
 
