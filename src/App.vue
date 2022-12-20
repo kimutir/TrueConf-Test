@@ -3,6 +3,7 @@
     <building-tools
       :queue="totalQueue"
       :marginLeft="marginButtonsLeft"
+      :computed-height="computedHeight"
       @add-floor="onAddFloor"
     />
 
@@ -18,7 +19,7 @@
 
 <script>
 import config from "@/config";
-import fromLocalStorage from "@/utils/fromLocalStorage.js";
+import fromLocalStorage from "@/utils/fromLocalStorage";
 import BuildingTools from "@/components/BuildingTools.vue";
 import BuildingShafts from "@/components/BuildingShafts.vue";
 
@@ -46,10 +47,13 @@ export default {
       // его текущий этаж, если лифт в покое
       this.queues[number].floor = inProgressFloor;
 
+      // console.log(this.totalQueue);
+
       // убираем из очереди этаж, на который пришел лифт
-      this.totalQueue = this.totalQueue.filter(
-        (i) => i !== currentFloor
-      );
+      this.totalQueue = this.totalQueue.filter((i) => {
+        // console.log("deleting", currentFloor);
+        return i !== currentFloor;
+      });
 
       // запоминаем стек этажей
       localStorage.totalQueue = JSON.stringify(this.totalQueue);
@@ -68,6 +72,7 @@ export default {
       ) {
         return;
       } else {
+        // console.log("added", nextFloor);
         this.totalQueue.push(nextFloor);
         localStorage.totalQueue = JSON.stringify(this.totalQueue);
       }
@@ -79,11 +84,24 @@ export default {
 
       for (const a of sortedQueues) {
         if (a.finishTime === closest.finishTime) {
-          if (
-            Math.abs(a.floor - nextFloor) <
-            Math.abs(closest.floor - nextFloor)
-          ) {
-            closest = a;
+          if (a.queue.length && closest.queue.length) {
+            const lastA = a.queue[a.queue.length - 1];
+            const lastClosest =
+              closest.queue[closest.queue.length - 1];
+
+            if (
+              Math.abs(lastA - nextFloor) <
+              Math.abs(lastClosest - nextFloor)
+            ) {
+              closest = a;
+            }
+          } else {
+            if (
+              Math.abs(a.floor - nextFloor) <
+              Math.abs(closest.floor - nextFloor)
+            ) {
+              closest = a;
+            }
           }
         } else {
           break;
@@ -126,9 +144,9 @@ export default {
         floors: config.floors,
       };
       const queues = this.createQueues(config.elevators);
+      this.queues = queues;
       localStorage.settings = JSON.stringify(settings);
       localStorage.queues = JSON.stringify(queues);
-      this.queues = queues;
       localStorage.totalQueue = JSON.stringify([]);
     }
   },

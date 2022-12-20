@@ -106,10 +106,10 @@ export default {
       // начальный и конечный этажи
       const startFloor = this.currentFloor;
       const endFloor = queue[0];
-
+      this.currentFloor = queue[0];
       this.movementAnimation(endFloor, startFloor).then(() => {
         // лифт на новом этаже, удаляем его из очереди
-        this.currentFloor = queue[0];
+
         queue.shift();
 
         // запоминаем текущий этаж

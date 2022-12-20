@@ -27,11 +27,11 @@ export default {
   props: {
     queue: Array,
     marginLeft: Number,
+    computedHeight: Number,
   },
   data() {
     return {
       floors: config.floors,
-      computedHeight: window.innerHeight / config.floors,
     };
   },
   methods: {
